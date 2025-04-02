@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Aladin</title>
+    <style>
+        body {
+            font-family: Helvetica, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #00008B, #800080);
+            color: white;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .question-box {
+            border: 2px solid darkblue;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        select, textarea {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        textarea {
+            min-height: 50px;
+            resize: vertical;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            cursor: pointer;
+            background: purple;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            margin: 0;
+        }
+        .header img {
+            width: 50px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>RATE HIM</h2>
+            <img src="logoo.png" alt="Logo">
+        </div>
+        <form id="ratingForm">
+            <div id="questions-container">
+                <!-- Questions will be dynamically inserted here -->
+            </div>
+            <button type="button" id="prevBtn" class="hidden" onclick="prevQuestion()">Previous</button>
+            <button type="button" id="nextBtn" onclick="nextQuestion()">Next</button>
+            <button type="button" id="submitBtn" class="hidden" onclick="submitForm()">Submit</button>
+        </form>
+        <p id="timer">Time Left: 10:00</p>
+    </div>
+    
+    <script>
+        const questions = [
+            { text: "How would you rate my hugs", image: "hug.jpg" },
+            { text: "Rate my ability to keep secrets", image: "secret.png" },
+            { text: "Rate my ability to make you laugh", image: "laugh.jpg" },
+            { text: "Rate my attractiveness", image: "attractiveness.jpg" },
+            { text: "Rate my social skills", image: "social.png" },
+            { text: "Rate my intelligence", image: "intelligence.jpg" },
+            { text: "Rate my hard work", image: "hardwork.png" },
+            { text: "Rate my romantic side", image: "romance.jpg" },
+            { text: "Rate my money management", image: "money.png" },
+            { text: "Rate my clothing style", image: "clothing.jpg" },
+            { text: "Rate my loyalty", image: "loyalty.jpg" }
+        ];
+        
+        let currentQuestion = 0;
+        let answers = {};
+        let timeLeft = 600; // 10 minutes in seconds
+
+        function loadQuestion() {
+            const container = document.getElementById("questions-container");
+            container.innerHTML = `
+                <div class="question-box">
+                    <label>${questions[currentQuestion].text} (0-10)</label>
+                    <img src="${questions[currentQuestion].image}" alt="Question Image">
+                    <label>Rate:</label>
+                    <select id="rating">
+                        ${Array.from({length: 11}, (_, i) => `<option value="${i}">${i}</option>`).join('')}
+                    </select>
+                    <label>Comment:</label>
+                    <textarea id="comment"></textarea>
+                </div>
+            `;
+            
+            document.getElementById("prevBtn").classList.toggle("hidden", currentQuestion === 0);
+            document.getElementById("nextBtn").classList.toggle("hidden", currentQuestion === questions.length - 1);
+            document.getElementById("submitBtn").classList.toggle("hidden", currentQuestion !== questions.length - 1);
+        }
+
+        function nextQuestion() {
+            saveAnswer();
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+        
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+        
+        function saveAnswer() {
+            answers[questions[currentQuestion].text] = {
+                rating: document.getElementById("rating").value,
+                comment: document.getElementById("comment").value
+            };
+        }
+
+        function submitForm() {
+            saveAnswer();
+            const today = new Date().toISOString().split('T')[0];
+            const mailtoLink = `mailto:aladinrym@gmail.com?subject=Rating - ${today}&body=` +
+                Object.keys(answers).map(key => `${key}: ${answers[key].rating}\nComment: ${answers[key].comment}`).join('%0D%0A');
+            window.location.href = mailtoLink;
+            alert("Thank you! Your rating has been submitted.");
+        }
+
+        function startTimer() {
+            setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    document.getElementById("timer").innerText = `Time Left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                } else {
+                    alert("Time's up! Submitting your answers.");
+                    submitForm();
+                }
+            }, 1000);
+        }
+
+        loadQuestion();
+        startTimer();
+    </script>
+</body>
+</html>
